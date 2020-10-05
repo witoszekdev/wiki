@@ -9,4 +9,5 @@ For learning
 
 ## CLI
 
-- [TLDR pages](https://github.com/tldr-pages/tldr)
+- [TLDR pages](https://github.com/tldr-pages/tldr) - better man pages
+- [The Fuck](https://github.com/nvbn/thefuck) - auto set correct command after failing to type basic stuff
