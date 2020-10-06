@@ -2,6 +2,10 @@
 
 Tipy i inne rzeczy
 
+## ohmyzsh aliases
+
+Aliases for common git commands in [ohmyzsh docs](https://github.com/ohmyzsh/ohmyzsh/wiki/Cheatsheet#git)
+
 ## Weź jeden plik z innego brancha
 
 ```
