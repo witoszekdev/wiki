@@ -2,6 +2,13 @@
 
 Tipy i inne rzeczy
 
+## Cheat sheet
+
+- [Log](https://elijahmanor.com/blog/git-log)
+- [Branch](https://elijahmanor.com/blog/git-branch)
+- [Github](assets/other/git/github-git-cheat.pdf)
+- [Atlasian](assets/other/git/atlassian-git-cheat.pdf)
+
 ## ohmyzsh aliases
 
 Aliases for common git commands in [ohmyzsh docs](https://github.com/ohmyzsh/ohmyzsh/wiki/Cheatsheet#git)
