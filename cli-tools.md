@@ -11,3 +11,15 @@ htop for diskspace
 
 JSON processing in command-line
 [Github Repo](https://github.com/antonmedv/fx)
+
+## tmpmail
+
+Tymczasowa skrzynka pocztowa
+
+[GitHub](https://github.com/sdushantha/tmpmail)
+
+## gron
+
+Make JSON greppable
+
+[Github Repo](https://github.com/tomnomnom/gron)
