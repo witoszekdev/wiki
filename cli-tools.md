@@ -23,3 +23,9 @@ Tymczasowa skrzynka pocztowa
 Make JSON greppable
 
 [Github Repo](https://github.com/tomnomnom/gron)
+
+## lsd
+
+LSDeluxe ( ͡° ͜ʖ ͡°)
+
+[GitHub Repo](https://github.com/Peltoche/lsd)
