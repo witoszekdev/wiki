@@ -35,3 +35,15 @@ Make JSON greppable
 LSDeluxe ( ͡° ͜ʖ ͡°)
 
 [GitHub Repo](https://github.com/Peltoche/lsd)
+
+## fd
+
+Simpler find command
+
+[Github Repo](https://github.com/sharkdp/fd)
+
+## ripgrep
+
+Better `grep`
+
+[Github Repo](https://github.com/sharkdp/fd)
