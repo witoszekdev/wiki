@@ -16,6 +16,56 @@ const Example = ({as: Element = 'button'}) => {
 }
 ```
 
+## with eslint
+
+### setup
+install plugin `@typescript-eslint`
+
+```bash
+npm install --save-dev @typescript-eslint/eslint-plugin @typescript-eslint/parser
+```
+
+set parser to `@typescript-eslint/parser`
+
+### notes
+
+some eslint rules can be problematic:
+- `no-undef` - disable altogether as TypeScript has its own chek for that
+- `no-unused-vars` - use `@typescript-eslint/no-unused-vars` instead
+- `no-use-before-define` - use `@typescript-eslint/no-use-before-define` instead
+-
+
+## enums
+
+zbiór stałych wartości, domyślnie numerowany od 0
+
+żeby używać jako typ union wszystkich wartości:
+
+```ts
+interface SomeInterface {
+  type: keyof typeof MyTypes
+}
+```
+
+## generics
+[Deep Dive Docs](https://basarat.gitbook.io/typescript/type-system/generics)
+### Generics and arrow functions
+
+[Source](https://stackoverflow.com/questions/32308370/what-is-the-syntax-for-typescript-arrow-functions-with-generics)
+```ts
+const foo = <T extends unknown>(x: T) => x;
+// or
+const foo = <T, >(x: T) => x;
+```
+
+### Preserve generic types in higher order functions
+[Source](https://stackoverflow.com/questions/51884498/using-react-forwardref-with-typescript-generic-jsx-arguments)
+
+```tsx
+const SelectWithRef = forwardRef(<Option extends string>(props: Props<Option>, ref?: Ref<HTMLSelectElement>) =>
+  <Select<Option> {...props} forwardedRef={ref} />);
+```
+
 ## Conditional types
 
 [Source](https://artsy.github.io/blog/2018/11/21/conditional-types-in-typescript/)
