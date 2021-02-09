@@ -144,6 +144,12 @@ const isNumber = x => {
 
 ### infer
 
+infer pozwala na użycie generycznego typu w conditional types i wyciągnięcie go
+
+```tsx
+type PropsOf<T> = T extends React.ComponentType<infer Props> ? Props : never
+```
+
 infer używa nazwy podanego typu
 np:
 
