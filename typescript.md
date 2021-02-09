@@ -250,3 +250,36 @@ type SomeType = {
   [P in keyof T]?: T[P];
 } & { key: value }
 ```
+
+## Modifing global types
+
+[Source](https://fettblog.eu/typescript-augmenting-global-lib-dom/)
+Sometimes TypeScript DOM types are broken (either spec is not up to date or other stuff)
+
+To fix types:
+1. Add global declaration in your file
+*or*
+2. Add declaration for whole project, into folder that is defined in `typeRoots`
+
+
+```ts
+declare global { // opening up the namespace
+  var ResizeObserver: { // mergin ResizeObserver to it
+    prototype: ResizeObserver;
+    new(callback: ResizeObserverCallback): ResizeObserver;
+  }
+}
+```
+
+if adding for whole project make shure that your type definitions file is included inside `typeRoots`:
+
+```json
+{
+  "compilerOptions": {
+    //...
+    "typeRoots": ["@types", "./node_modules/@types"],
+    //...
+  },
+  "include": ["src", "@types"]
+}
+```
