@@ -16,6 +16,48 @@ const Example = ({as: Element = 'button'}) => {
 }
 ```
 
+Dynamic `as` prop
+
+```tsx
+/**
+ *  Type for `as` prop that accepts any HTML element as string or any React Function Component
+ *
+ *  Accepts optional interface for specifying which props the Function Component must accept
+ */
+export type AnyTag<Interface = any> = keyof JSX.IntrinsicElements
+  | React.FunctionComponent<Interface>
+  | React.ForwardRefExoticComponent<Interface>
+  | (new (props: Interface) => React.Component);
+
+/**
+ * Type for component that accepts dynamic `as` prop to unpack the props accepted by the injected component
+ */
+export type PropsOf<Tag> =
+  Tag extends keyof JSX.IntrinsicElements ? JSX.IntrinsicElements[Tag] :
+    Tag extends React.ComponentType<infer Props> ? Props & JSX.IntrinsicAttributes :
+      Tag extends React.ForwardRefExoticComponent<infer Props> ? Props & JSX.IntrinsicAttributes :
+        never
+
+/**
+ * Type used in components with forwardRef and `as` dynamic prop to use the HTML element of `as` prop
+ * @todo add support for extracting HTML element of React component that use forwardRef as well
+ */
+export type ElementOf<Tag> =
+  Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[Tag] :
+    Tag extends React.ForwardRefExoticComponent<any> ? HTMLElement :
+      never;
+
+/**
+ * Type for component props that accept it's props, spacing props, ref and `as` prop to inject other component in render
+ *
+ * **NOTE**: The props accepted by the dynamic `as` component can override internal props of UI component
+ * @see {@link https://stackoverflow.com/questions/54049871/how-do-i-type-this-as-jsx-attribute-in-typescript}
+ */
+export type UIComponentInjectableProps<Props, Tag extends AnyTag> = Readonly<Props> & SpacingPropsType & PropsOf<Tag>;
+export type UIComponentInjectable<Props, Tag extends AnyTag> = React.FC<UIComponentInjectableProps<Props, Tag>>;
+
+```
+
 ## with eslint
 
 ### setup
