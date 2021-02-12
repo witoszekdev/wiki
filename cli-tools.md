@@ -47,3 +47,8 @@ Simpler find command
 Better `grep`
 
 [Github Repo](https://github.com/sharkdp/fd)
+
+## jiq
+
+Preview for `jq` (changing json files)
+[Website](https://sr.ht/~gpanders/ijq/)
