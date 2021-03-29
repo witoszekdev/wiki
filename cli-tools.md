@@ -63,3 +63,40 @@ Preview for `jq` (changing json files)
 
 Create regex from provided valid string examples
 [Github Repo](https://github.com/pemistahl/grex)
+
+## procs
+
+Modern `ps` replacement written in Rust
+
+[Github Repo](https://github.com/dalance/procs)
+
+## dust
+
+du in rust - view space utilization by folder in %
+
+[Github Repo](https://github.com/bootandy/dust)
+
+## hyperfine
+
+Benchmarks in cli
+
+[Github Repo](https://github.com/sharkdp/hyperfine)
+
+## bottom
+
+Yet another htop
+
+[Github Repo](https://github.com/ClementTsang/bottom)
+
+## tldr pages (many clients)
+
+Alternative to man pages with most commonly used examples of commands
+
+[Website](https://tldr.sh/)
+
+## bandwhich
+
+Terminal bandwith monitoring tools
+
+[Github Repo](https://github.com/imsnif/bandwhich)
+
