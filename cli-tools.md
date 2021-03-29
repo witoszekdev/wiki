@@ -2,6 +2,12 @@
 
 Awesome CLI tools
 
+## exa
+
+Better `ls`
+
+[Github Repo](https://github.com/ogham/exa)
+
 ## duf
 
 htop for diskspace
