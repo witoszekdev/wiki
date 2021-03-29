@@ -52,3 +52,8 @@ Better `grep`
 
 Preview for `jq` (changing json files)
 [Website](https://sr.ht/~gpanders/ijq/)
+
+## grex
+
+Create regex from provided valid string examples
+[Github Repo](https://github.com/pemistahl/grex)
