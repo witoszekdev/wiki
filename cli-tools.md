@@ -100,3 +100,9 @@ Terminal bandwith monitoring tools
 
 [Github Repo](https://github.com/imsnif/bandwhich)
 
+## njt (npm jump to)
+
+Provide package name, jump to usefull links (bundlephobia, changelog, github repo, homepage, releases, etc.)
+
+[Github Repo](https://github.com/kachkaev/njt/blob/main/README.md#getting-njt)
+[Website](https://njt.vercel.app)
