@@ -112,3 +112,9 @@ Provide package name, jump to usefull links (bundlephobia, changelog, github rep
 Scan git repitory with secrets before you publish them
 
 [Github Repo](https://github.com/awslabs/git-secrets#secret-providers)
+
+## alias-tips
+
+Get tips about available aliases in your shell when you use the aliased command
+
+[Github Repo](https://github.com/djui/alias-tips)
