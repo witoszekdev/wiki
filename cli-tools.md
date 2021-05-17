@@ -106,3 +106,9 @@ Provide package name, jump to usefull links (bundlephobia, changelog, github rep
 
 [Github Repo](https://github.com/kachkaev/njt/blob/main/README.md#getting-njt)
 [Website](https://njt.vercel.app)
+
+## git secrets
+
+Scan git repitory with secrets before you publish them
+
+[Github Repo](https://github.com/awslabs/git-secrets#secret-providers)
