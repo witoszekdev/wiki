@@ -124,3 +124,9 @@ Get tips about available aliases in your shell when you use the aliased command
 Save gpg passphrase to MacOS keychaing
 
 [Page](https://gpgtools.org)
+
+## ts-node
+
+TypeScript REPL
+
+[Github Repo](https://github.com/TypeStrong/ts-node)
