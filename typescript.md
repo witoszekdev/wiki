@@ -9,11 +9,9 @@ interface IExampleProps {
   as: React.ElementType;
 }
 
-const Example = ({as: Element = 'button'}) => {
-  return (
-    <Element></Element>
-  )
-}
+const Example = ({ as: Element = "button" }) => {
+  return <Element></Element>;
+};
 ```
 
 Dynamic `as` prop
@@ -24,7 +22,8 @@ Dynamic `as` prop
  *
  *  Accepts optional interface for specifying which props the Function Component must accept
  */
-export type AnyTag<Interface = any> = keyof JSX.IntrinsicElements
+export type AnyTag<Interface = any> =
+  | keyof JSX.IntrinsicElements
   | React.FunctionComponent<Interface>
   | React.ForwardRefExoticComponent<Interface>
   | (new (props: Interface) => React.Component);
@@ -32,20 +31,23 @@ export type AnyTag<Interface = any> = keyof JSX.IntrinsicElements
 /**
  * Type for component that accepts dynamic `as` prop to unpack the props accepted by the injected component
  */
-export type PropsOf<Tag> =
-  Tag extends keyof JSX.IntrinsicElements ? JSX.IntrinsicElements[Tag] :
-    Tag extends React.ComponentType<infer Props> ? Props & JSX.IntrinsicAttributes :
-      Tag extends React.ForwardRefExoticComponent<infer Props> ? Props & JSX.IntrinsicAttributes :
-        never
+export type PropsOf<Tag> = Tag extends keyof JSX.IntrinsicElements
+  ? JSX.IntrinsicElements[Tag]
+  : Tag extends React.ComponentType<infer Props>
+  ? Props & JSX.IntrinsicAttributes
+  : Tag extends React.ForwardRefExoticComponent<infer Props>
+  ? Props & JSX.IntrinsicAttributes
+  : never;
 
 /**
  * Type used in components with forwardRef and `as` dynamic prop to use the HTML element of `as` prop
  * @todo add support for extracting HTML element of React component that use forwardRef as well
  */
-export type ElementOf<Tag> =
-  Tag extends keyof HTMLElementTagNameMap ? HTMLElementTagNameMap[Tag] :
-    Tag extends React.ForwardRefExoticComponent<any> ? HTMLElement :
-      never;
+export type ElementOf<Tag> = Tag extends keyof HTMLElementTagNameMap
+  ? HTMLElementTagNameMap[Tag]
+  : Tag extends React.ForwardRefExoticComponent<any>
+  ? HTMLElement
+  : never;
 
 /**
  * Type for component props that accept it's props, spacing props, ref and `as` prop to inject other component in render
@@ -53,14 +55,19 @@ export type ElementOf<Tag> =
  * **NOTE**: The props accepted by the dynamic `as` component can override internal props of UI component
  * @see {@link https://stackoverflow.com/questions/54049871/how-do-i-type-this-as-jsx-attribute-in-typescript}
  */
-export type UIComponentInjectableProps<Props, Tag extends AnyTag> = Readonly<Props> & SpacingPropsType & PropsOf<Tag>;
-export type UIComponentInjectable<Props, Tag extends AnyTag> = React.FC<UIComponentInjectableProps<Props, Tag>>;
-
+export type UIComponentInjectableProps<
+  Props,
+  Tag extends AnyTag
+> = Readonly<Props> & SpacingPropsType & PropsOf<Tag>;
+export type UIComponentInjectable<Props, Tag extends AnyTag> = React.FC<
+  UIComponentInjectableProps<Props, Tag>
+>;
 ```
 
 ## with eslint
 
 ### setup
+
 install plugin `@typescript-eslint`
 
 ```bash
@@ -72,6 +79,7 @@ set parser to `@typescript-eslint/parser`
 ### notes
 
 some eslint rules can be problematic:
+
 - `no-undef` - disable altogether as TypeScript has its own chek for that
 - `no-unused-vars` - use `@typescript-eslint/no-unused-vars` instead
 - `no-use-before-define` - use `@typescript-eslint/no-use-before-define` instead
@@ -85,27 +93,35 @@ zbiór stałych wartości, domyślnie numerowany od 0
 
 ```ts
 interface SomeInterface {
-  type: keyof typeof MyTypes
+  type: keyof typeof MyTypes;
 }
 ```
 
 ## generics
+
 [Deep Dive Docs](https://basarat.gitbook.io/typescript/type-system/generics)
+
 ### Generics and arrow functions
 
 [Source](https://stackoverflow.com/questions/32308370/what-is-the-syntax-for-typescript-arrow-functions-with-generics)
+
 ```ts
 const foo = <T extends unknown>(x: T) => x;
 // or
-const foo = <T, >(x: T) => x;
+const foo = <T>(x: T) => x;
 ```
 
 ### Preserve generic types in higher order functions
+
 [Source](https://stackoverflow.com/questions/51884498/using-react-forwardref-with-typescript-generic-jsx-arguments)
 
 ```tsx
-const SelectWithRef = forwardRef(<Option extends string>(props: Props<Option>, ref?: Ref<HTMLSelectElement>) =>
-  <Select<Option> {...props} forwardedRef={ref} />);
+const SelectWithRef = forwardRef(
+  <Option extends string>(
+    props: Props<Option>,
+    ref?: Ref<HTMLSelectElement>
+  ) => <Select<Option> {...props} forwardedRef={ref} />
+);
 ```
 
 ## Conditional types
@@ -130,14 +146,15 @@ A extends { meow(): void } ? A : never
 przejdzie tylko jak object który przekażemy będzie miał funkcję `meow`, z pasującym typem - jak nie to `never`, czyli nie może przejść
 
 można pomyśleś że conditional type działa jak funkcja JSowa:
+
 ```ts
-type isNumber<T> = T extends number ? 'number' : 'other';
+type isNumber<T> = T extends number ? "number" : "other";
 ```
 
 ```js
-const isNumber = x => {
-  typeof x === 'number' ? 'number' : 'other'
-}
+const isNumber = (x) => {
+  typeof x === "number" ? "number" : "other";
+};
 ```
 
 [Source](https://youtu.be/SbVgPQDealg)
@@ -147,20 +164,21 @@ const isNumber = x => {
 infer pozwala na użycie generycznego typu w conditional types i wyciągnięcie go
 
 ```tsx
-type PropsOf<T> = T extends React.ComponentType<infer Props> ? Props : never
+type PropsOf<T> = T extends React.ComponentType<infer Props> ? Props : never;
 ```
 
 infer używa nazwy podanego typu
 np:
 
 ```ts
-type Unpack<A> = A extends Array<infer E> ? E : A
+type Unpack<A> = A extends Array<infer E> ? E : A;
 
-type Test = Unpack<Apple[]>
+type Test = Unpack<Apple[]>;
 // => Apple
-type Test = Unpack<Apple>
+type Test = Unpack<Apple>;
 // => Apple
 ```
+
 tutaj zwróciło Apple nawet jak podaliśmy array Apple
 
 [Source](https://youtu.be/ijK-1R-LFII)
@@ -236,19 +254,17 @@ const todo: TodoPreview = {
 
 ```ts
 // Obtain the parameters of a function type in a tuple
-type Parameters<T> =
-  T extends (...args: infer P) => any ? P : never
+type Parameters<T> = T extends (...args: infer P) => any ? P : never;
 ```
 
-
- ## Adding members to a type
+## Adding members to a type
 
 Use an intersection - `&`
 
 ```ts
 type SomeType = {
   [P in keyof T]?: T[P];
-} & { key: value }
+} & { key: value };
 ```
 
 ## Modifing global types
@@ -257,17 +273,19 @@ type SomeType = {
 Sometimes TypeScript DOM types are broken (either spec is not up to date or other stuff)
 
 To fix types:
+
 1. Add global declaration in your file
-*or*
+   _or_
 2. Add declaration for whole project, into folder that is defined in `typeRoots`
 
-
 ```ts
-declare global { // opening up the namespace
-  var ResizeObserver: { // mergin ResizeObserver to it
+declare global {
+  // opening up the namespace
+  var ResizeObserver: {
+    // mergin ResizeObserver to it
     prototype: ResizeObserver;
-    new(callback: ResizeObserverCallback): ResizeObserver;
-  }
+    new (callback: ResizeObserverCallback): ResizeObserver;
+  };
 }
 ```
 
@@ -277,9 +295,36 @@ if adding for whole project make shure that your type definitions file is includ
 {
   "compilerOptions": {
     //...
-    "typeRoots": ["@types", "./node_modules/@types"],
+    "typeRoots": ["@types", "./node_modules/@types"]
     //...
   },
   "include": ["src", "@types"]
+}
+```
+
+## Tips and tricks
+
+### Type object keys dynamically
+
+Create an object that will have predefined set of keys (for type checking) that can have one type (string) and specified value.
+
+Example:
+
+```ts
+const filterFunctions = {
+  date: (value, index) => true,
+  string: (value, index) => false,
+};
+```
+
+Solution:
+
+```ts
+type FilterFn = (data: SomeDataType, index: number) => boolean;
+
+function filterFunctionsWrapper<T extends { [nkeyame: string]: FilterFn }>(
+  functions: T
+) {
+  return functions;
 }
 ```
