@@ -469,3 +469,5 @@ let result = foo.pipe(delayWhen((x) => interval(x * x * 100).pipe(take(1))));
 ```
 
 Use case: Wait with requests for a while before making it
+
+### debounce
