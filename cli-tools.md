@@ -130,3 +130,9 @@ Save gpg passphrase to MacOS keychaing
 TypeScript REPL
 
 [Github Repo](https://github.com/TypeStrong/ts-node)
+
+## mc-fly
+
+Replaces commandline history (CMD+R) withi nice UI and fuzzy-search
+
+[Github Repo](https://github.com/cantino/mcfly)
