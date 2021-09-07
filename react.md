@@ -234,7 +234,7 @@ React will go through the effect list once again and:
 
 After everything - we've finished the commit
 
-## Priority
+### Priority
 
 Each update has priority assigned:
 
@@ -249,7 +249,7 @@ This means that if high priority work would appear then it'll jump up ahead of l
 
 When that happens it throws out any work that has been done to handle the priority update. It'll start again creating workInProgress tree from `HostRoot`.
 
-## Lifecycle hooks
+### Lifecycle hooks
 
 The order they might fire is not the one we might expect. Some of them are called in Phase 1 - render / reconcilation, some of them in Phase 2 - commit:
 
@@ -261,7 +261,7 @@ The order could be:
 - (update 2) componentWillUpdate, componentDidUpdate
 - (update 3) componentWillUpdate, componentDidUpdate
 
-## Starvation
+### Starvation
 
 ![Starvation](images/3318ea53feab204cea1b3d35de5e4f61ed6bc785da59b72f69200c17137ea5cf.png)
 
@@ -271,11 +271,17 @@ How React handles that? Re-uses work when it can. When low prio work was done an
 
 (there might be more solutions to this)
 
-## cooperative scheduling
+### cooperative scheduling
 
 **cooperative scheduling** - it's basically what the Fiber is doing - breaking work into smaller units of work, that can be paused so the main thread is free to do other important stuff
 
 ![picture 22](images/ff7f94eb55bf6a08fde7a09251a0f02402ef18e2c1fd37fe88dabbd2ad9a66e9.png)
+
+### More resources
+
+[React Fiber Architecture](https://github.com/acdlite/react-fiber-architecture?source=post_page---------------------------)
+[What The Heck Is the Event Loop Anyway?](https://www.youtube.com/watch?v=8aGhZQkoFbQ)
+[To Understand React Fiber, You Need to Know About Threads](https://dev.to/afairlie/to-understand-react-fiber-you-need-to-know-about-threads-3dof)
 
 ## Fiber in more depth
 
