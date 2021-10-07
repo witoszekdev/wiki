@@ -64,6 +64,59 @@ export type UIComponentInjectable<Props, Tag extends AnyTag> = React.FC<
 >;
 ```
 
+### Private children
+
+Component that can be used only in specific parent component as a child.
+For example: `<List>` (can have) => `<ListItem>`
+
+1. Make a component that doesn't render anything and throws an error instead. Set a property on the function `ListItem.parent = AllowedParentComponent` so that we can check it later.
+2. Make another component `Private*` that has the same props type and renders the content
+3. Inside the parent component when iterating over children (by using toArray) check for `child.type` and `child.type.parent`
+
+```tsx
+type ListItemProps = {
+  children: ReactText;
+} & JSX.IntrinsicElements["li"];
+
+type ChildWithParent = ReactElement & {
+  type: { parent: ReactElement };
+  props: ListItemProps;
+};
+
+const ListItem = (_props: ListItemProps) => {
+  throw new Error("ListItem musi być dzieckiem List");
+};
+
+ListItem.parent = List;
+
+export const List = ({ children }: ListProps) => {
+  const newChildren = flattenChildren(children).map((child: unknown) => {
+    const child = child as ChildWithParent;
+    if (isValidElement(child)) {
+      if (child.type === ListItem && child.type.parent === List) {
+        return (
+          <PrivateListItem
+            key={child.key}
+            {...(child.props as ListItemProps)}
+          />
+        );
+      } else {
+        throw new Error("Tylko ListItem może być dzieckiem List");
+      }
+    }
+  });
+
+  return <ul>{newChildren}</ul>;
+};
+
+const ListItemWrapper = (props: ListItemProps) => <ListItem {...props} />;
+
+ListItemWrapper.parent = List;
+```
+
+Note: `flattenChildren` is provided by [react-keyed-flatten-children](https://github.com/grrowl/react-keyed-flatten-children)
+[Code from this blog](https://frontlive.pl/blog/react-children-i-typescript)
+
 ## with eslint
 
 ### setup
