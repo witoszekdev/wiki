@@ -61,6 +61,8 @@ Component libraries that include many usefull components without styling (menu /
 - [HTML5 Doctor](http://html5doctor.com/)
 - [WAI-ARIA Authoring Practices](https://www.w3.org/TR/wai-aria-practices-1.1)
 - [Inclusive Components](inclusive-components.design)
+- [Complete Guide To Accessible Front-end Components](https://www.smashingmagazine.com/2021/03/complete-guide-accessible-front-end-components/#accessible-focus-styles)
+- [Example Audit Report](https://bulbenergy.github.io/bulb-audit/patterns/components/menu-button/)
 
 #### Figma plugins
 
@@ -85,7 +87,7 @@ Component libraries that include many usefull components without styling (menu /
 - [Screen reader modes](https://tink.uk/understanding-screen-reader-interaction-modes)
 - [Prefers Reduced Motion - React](https://www.joshwcomeau.com/react/prefers-reduced-motion/)
 - [Accessibility for Vestibular Disorders](https://alistapart.com/article/accessibility-for-vestibular/)
--
+- [Better color contrast measure - APCA](<https://web.dev/color-and-contrast-accessibility/#advanced-perceptual-contrast-algorithm-(apca)>)
 
 ## Notes
 
