@@ -21,7 +21,8 @@ The browser doesn't have control over entire network - stuff that's not cotrolle
 
 Compare test data with real user experience - webpagetest shows the test vs CrUX
 
-https://zizzamia.github.io/perfume/
+Measure performance on your page: https://zizzamia.github.io/perfume/
+This can be done by APM (Application Performance Monitoring) services as well
 
 First Byte - BE problems: long SQL queries, server issues. It's like domino - it it's slow everything is slow
 
@@ -86,3 +87,8 @@ https://nooshu.com/blog/2021/03/14/setting-up-cloudflare-workers-for-web-perform
 https://www.fastly.com/blog/how-to-test-site-speed-optimizations-with-compute-edge
 
 We can see if making those improvement (speding time on development) makes even sense or if they even benefit us.
+
+People to follow:
+
+- https://twitter.com/csswizardry
+- https://twitter.com/tkadlec
