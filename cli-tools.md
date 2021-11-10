@@ -136,3 +136,9 @@ TypeScript REPL
 Replaces commandline history (CMD+R) withi nice UI and fuzzy-search
 
 [Github Repo](https://github.com/cantino/mcfly)
+
+## vdx
+
+Intuitive CLI wrapper for FFmpeg
+
+[GitHub Repo](https://github.com/yuanqing/vdx)
