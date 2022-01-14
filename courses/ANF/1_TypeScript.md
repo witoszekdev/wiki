@@ -732,3 +732,107 @@ Kiedy tworzymy interfejs TS cacheuje jego zawartość, odwołując się do jego 
 
 Jeśli używamy generyków i to jeszcze zagnieżdżonych to nasza kompilacja będzie coraz bardziej zwalniać
 
+## Control Flow Analysis
+
+Kompilator analizuje możliwe ścieżki przejścia przez nasz kod
+
+> short-circuit operator - kończymy sprawdzanie wyrażenia jeśli wyrażenie dalej i tak nie zmieniłoby wyniku
+> np. logical OR `canBeFalsey || 'myDefaultValue'`
+> Czyli jeśli `canBeFalsey` jest true to zwracamy tą wartość i to co jest dalej - `myDefaultValue` nas nie interesuje
+> Tak samo jeśli `canBeFalsey` będzie false to typy falsey z `canBeFalsey` zostaną zignorowane (bo nigdy nie będą zwrócone)
+
+```ts
+declare const trocheSzajsu: true | 0 | 'a' | undefined;
+// 0 i undefined są falsey
+// true i 'a' są truthy
+declare const trocheSmiecia: false | 1 | null;
+// false i null są falsey
+// 1 jest truthy
+
+const or = trocheSzajsu || trocheSmiecia;
+// usuwamy wszystkie falsey z `trocheSzajsu` (ich wartości zostaną zastąpione tym co jest w `trocheSmiecia`)
+// czyli:
+// (true | 0 | 'a' | undefined) | (false | 1 | null)
+// (true | 'a') | (false | 1 | null)
+// true | false | 'a' | 1 | null
+// boolean | 'a' | 1 | null
+```
+
+To działa też dla ifów
+
+```ts
+if (trocheSzajsu) {
+  // zostają tylko truthy values:
+  // true | 'a'
+}
+```
+
+Roszerzanie typów z control flow analysis jest możliwe kiedy przypisujemy `const` do `let`
+
+```ts
+const sztywneEuro = 'EUR'; // type: 'EUR'
+let elastyczneEuro = sztywneEuro; // type: string
+// do let możemy przypisywać inne dane, dlatego jego typ zostaje rozszerzony na string
+```
+
+Można też w drugą stornę, jeśli przypiszemy daną rzecz raz TypeScript będzie od danego miejsca w kodzie wiedział jaki jest typ zmiennej `let`
+
+```ts
+let cos; // type: any
+cos = true;
+cos // type: true
+```
+
+Jeśli przypiszemy wartość znowu to znowu zmieni się typ
+
+```ts
+let cos;
+cos = true;
+cos = false;
+// type: false
+```
+
+Assertion functions - sprawdź czy rzecz jest danego typu albo rzuć wyjątek (czyli dalszy fragment kodu się nie wykona)
+
+```ts
+function isNumber(val: any): assert val is number {
+  if (typeof val !== "number") {
+    throw new Error("not a number!!1!");
+  }
+}
+
+declare something: 'a' | 1 | 0;
+// type: 'a' | 1 | 0
+isNumber(something);
+// type: 1 | 0;
+```
+
+### Wepchnięcie błędu z powrotem do runtime'u
+
+Jeśli mamy wartość która może być undefined, to nie ma sensu sprawdzać wszędzie w kodzie czy jest defined tylko lepiej na odwrót - sprawdzić raz czy jest undefined i jeśli tak rzucić wyjątek
+
+Typy które przez control flow analysis stają się nie możliwe zostają zamienione na typ `never` - a unia `cokolwiel` z `never` daje `cokolwiek` (never jest usuwany z typu, bo never - nigdy nie może się to wydarzyć)
+
+```ts
+const musiBycWartosc = string | undefined;
+if (!musiBycWartosc) {
+  throw new Error("");
+  // IF branch implicitly continues with never - dead branch
+}
+// musiBycWartosc: string | never -> string
+```
+
+Nie tracimy nic - aplikacja i tak nie mogłaby działać z `undefined`.
+A zyskujemy na czystszym kodzie - nie musimy wszędzie obsługiwać to `undefined`
+
+```ts
+function check(val: string | undefined) {
+  if (!musiBycWartosc) {
+    throw new Error("");
+  }
+  return val;
+}
+// ReturnValue: string
+```
+
+Czasami typy implicit są lepsze niż explicit - tutaj gdybyśmy do sygnatury funkcji dodali return type `string | undefined` to niepotrzebnie roszerzylibyśmy typ
