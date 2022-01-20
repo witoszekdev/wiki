@@ -836,3 +836,448 @@ function check(val: string | undefined) {
 ```
 
 Czasami typy implicit są lepsze niż explicit - tutaj gdybyśmy do sygnatury funkcji dodali return type `string | undefined` to niepotrzebnie roszerzylibyśmy typ
+
+## Generyki i typy złożone
+
+typ generyczny - to typ parametryzujący inne typy
+
+![picture 1](../../images/b2746b9c3633c1f9c4eae6878cdc24401c7b26ed50803809caa394be4534acca.png)
+
+### Generic constraints
+
+`extends`
+
+`T` powinno rozszerzać podany typ
+
+```ts
+type Test<T extends {id: number}>;
+```
+
+### Generyczne funkcje
+
+Syntax:
+
+```ts
+const genericArrow = <T>(a: T, b: T) => ({ a, b })
+function combineFn<T>(a: T, b: T){
+  return { a, b }
+} // return type: { a: T, b: T }
+```
+
+Żeby użyć funkcji nie musimy podawać generyka - implicit
+
+```ts
+const combinedStrings = combineFn('a', 'b') // type: {a: string, b: string}
+```
+
+możemy podać zeby sprawdzić że to co podaliśmy spełnia nasze zamiary
+
+```ts
+const combinedNumbers = combineFn<number>(1, '2') // Error: '2' is not a number
+```
+
+### Generyczne funkcje vs funkcja ze sparametryzowanym typem
+
+To są dwie zupełnie różne rzeczy
+
+```ts
+type GenericFn = <T>(a: T, b: T) => { a: T, b: T }
+type ParametrizedFn<T> = (a: T, b: T) => { a: T, b: T }
+```
+
+Funkcja ze sparametryzowanym typem przypomina wyglądem generyka - różnica jest taka, że po podaniu argumentu, przestaje być generykiem i zamienia się w zwyczajny typ
+
+```ts
+declare let _parametrizedFn: ParametrizedFn // ❌ musi mieć z góry znane T
+declare let parametrizedFn: ParametrizedFn<string> // OK, typ: {a: string, b: string}
+// to musi być string nie zależnie od wywołania!
+declare let genericFn: GenericFn //  nie musi, bo każde wywołanie może mieć inne T
+
+parametrizedFn('ANF', 'ANF') // ✅ miał być string
+parametrizedFn(125, 125) // ❌ miał być string
+genericFn('ANF', 'ANF') // ✅ cokolwiek
+genericFn(125, 125) // ✅ cokolwiek
+genericFn('ANF', 125); // ❌ pomieszane typy
+```
+
+### Generyki na poziomie klasy vs na poziomie metody
+
+Możemy mieć jeden wspólny generyk na poziomie klasy ORAZ na poziomie każdej metody tej klasy
+
+⚠️ Oba generyki mogą mieć tą samą nazwę, np. `T` - mimo że jest kolizja nazw zostanie użyty generyk najbliższy wywołania, czyli. np w metodzie będzie `T` z generyka tej metody nie z tego co jest dla całej klasy.
+
+```ts
+class GenerykiWywolan<T> {
+  constructor(
+    public data: T
+  ){}
+
+  metoda<T>(another: T){
+    // T z klasy to nie T z metody!
+    return this.data == another
+  }
+}
+```
+
+Wniosek - definiując generyki świadomie decydujmmy:
+- czy mają być stałe dla całej klasy
+- czy różne dla każdego wywołania
+
+### Typy mapowane
+
+Typy wtórne (budowane na podstawie istniejącego typu)
+Mapowanie polega na przeiterowaniu po kluczach typu obiektowego (interfejsu / typu)
+Na tej podstawie budujemy nowy typ obiektowy
+
+Działa to analogicznie jak mapowanie po strukturach danych, np. array
+
+> W podobny sposób działa typ wbudowany `Partial<>` - który bierze wszystkie pola i sprawia, że stają się opcjonalne
+> `Required<>` - usuwa opcjonalność
+> `Pick<>` - stwórz nowy typ, który zawiera tylko wymienione pola
+> `Omit<>` - stwórz nowy typ, który zawiera wszystkie pola poza tymi podanymi
+
+Typ `Reveal` - sztuczka, która pozawala na "wyczyszczenie" zbyt złożonych typów.
+Po użyciu `Reveal` zostanie nam tylko finalny typ - wynika to z "wnętrzności" TypeScript'a
+`Reveal` nic nie zmienia w naszym typie, usuwa tylko podczas wyświetlania typu (np. w VSCode) w jaki sposób został on zbudowany.
+
+```ts
+type Reveal<T> = { [P in keyof T]: T[P] }
+```
+
+### Typy warunkowe
+
+If-then-else na typach
+
+Jeśli warunek spełniony - typ A, jeśli nie typ B
+Odpowiada na pytanie: "Czy podany typ jest podtypem innego?"
+
+Rozłączność unii polega na tym że możemy na każdym z jej elementów zastosować typ warunkowy - np. sprawdzamy czy w unii jest typ null - jeśli jest to wylatuje (zwracamy `never`), a jeśli nie to zostaje (tak działa wbudowany typ `NonNullable`)
+
+`distritutive/naked` - rozdzielność IF-owania (tylko dla typów naked)
+
+**naked types** - typy które występują w warunku samodzielnie, np. `T`
+(naked type parametr - parametr generyczny, który w generic constraint występuje samodzielnie jako T)
+Takie typy da się zastosować w typie warunkowym - np.
+
+```ts
+type OnlyStrings<T> = T extends string ? T : never;
+```
+
+Nie da się jednak tego zastować dla typów, które są "opakowane" np. Array'em
+Rozłączne (**distributive**) są tylko unie w których T występuje samodzielnie
+
+```ts
+type BrokenOnlyStrings<T> = T[] extends string[] ? T : never;
+// BrokenOnlyStrings<string | string[]> = never
+```
+
+`infer` - pozwala wydobywanie typu z większego typu
+Słowo kluczowe infer polega na tym, że jeżeli tworzymy nowy typ z użyciem generic constraint (`T extends ...`) i wszystkie warunki w naszym typie będą się zgadzać, to typ zostanie "wyciągnięty" co pozwala nam go użyć w innym miejscu, np. w typie wartości zwracanej z funkcji
+
+```ts
+type FirstArg<T> = T extends (arg: infer A, ...args: any[]) => any ? A : never;
+```
+
+Wbudowane typy TSa:
+- `Parameters` - wszystkie parametry funkcji
+- `ReturnType` - typ zwracany z funkcji
+
+To pozwala nam na stowrzenie nowego typu, bez robienia tego na sztywno (podajemy podale, które chcemy wykliczyć) tylko na podstawie jakiegoś warunku (np. nie mogą być nullable).
+
+#### Przykład `WithoutNullProperties``
+
+```ts
+type WithoutNullProperties<T> = Pick<T, {
+  [P in keyof T]: null extends T[P] ? never : P
+}[keyof T]>
+
+const myObject = {
+  text: string;
+  date: Date | undefined;
+  amount: number | null;
+}
+```
+
+po kolei:
+
+1. Tworzymy typ warunkowy, który zwraca nam `never` lub nazwę (key) danego pola
+
+```ts
+type SomeObject = typeof myObject;
+
+type NullableAsNever = {
+  [P in keyof SomeObject]: null extends SomeObject[P] ? never : P;
+}
+
+type Result = {
+  text: "text";
+  date: "date";
+  amount: never;
+}
+```
+
+2. Stosujemy lookup na naszym obiekcie, po to żeby wydobyć nazwy pól (key) które spełniły nasz warunek
+
+```ts
+type Lookup = keyof SomeObject; // "text" | "date" | "amount"
+
+type Result = NullableAsNever[keyof SomeObject]
+
+type _Result = "text" | "date" | never; // = "text" | "date"
+```
+
+3. Stosujemy `Pick` i podajemy mu jako drugi parametr wynik naszych "obliczeń", w ten sposób usuwamy niechciane pola z obiektu
+
+```ts
+type Result = Pick<SomeObject, {
+  [P in keyof SomeObject]: null extends SomeObject[P] ? never : P
+}[keyof SomeObject]>
+
+type _Result = {
+  text: string;
+  date: Date | undefined;
+}
+```
+
+## Type safe-unsafe
+
+Istnieją wyrażenia, które i tak nie gwarantują nam bezpiezceństwa.
+Kompilator może mieć "dziury", dlatego że coś jest kosztowne obliczeniowo albo byłaby zbyt upierdliwa w codziennej pracy.
+
+Przykłady:
+- array access - `arr[10]`
+  - co się stanie jeśli wyjdziemy poza zakres array'a?
+  - w JSie będzie undefined ale TypeScript i tak zastosuje dla nas typ jaki przypisaliśmy dla tego Array'a
+  - inaczej musiałby być zawsze `T | undefined`
+  - możemy to zmienić używając odpowiedniej flagi w TSie
+- index signature access - `dict[key]`
+
+```ts
+type ItemRecord = Record<string, Value>;
+type ItemMap = {
+  [key: string]: Value;
+}
+// ItemRecord i ItemMap działają więc tak samo
+
+declare const map: ItemMap;
+declare const record: ItemRecord;
+
+map['elo']; // ✅ ok przechodzi
+map[1]; // ⚠️ przechodzi mimo że nie powinno
+
+// analogicznie
+
+record["elo"]; // ✅ ok przechodzi
+record[1]; // ⚠️ przechodzi mimo że nie powinno
+```
+
+- enum number-based
+
+Jeżeli enum zawiera cyfry jako wartości TypeScript i tak pozwoli przypisać wartość z czapy
+
+```ts
+enum MyNumbers = {
+  _10 = 10,
+  _20 = 20,
+}
+
+declare const okAssignmnnt: MyNumbers = 10; //  ✅ ok, działa
+declare const assignment: MyNumbers = 2137; //  ⚠️ działa a nie powinno
+```
+
+- try...catch (poniżej v4)
+
+TypeScript ma też swoje ograniczenia:
+- https://github.com/Microsoft/TypeScript/issues/24275
+- https://github.com/microsoft/TypeScript/issues/27711
+
+### Flagi kompilacji
+
+Aby umożliwić stopniową migrację z JSa TS ma flagi kompilacji, co pozwala na "rozluźnienie" typów.
+Możemy być bardziej lub mniej strict. Domyślnie **wszystkie uswatione są na false**!
+
+![picture 1](../../images/79d788350ce7077ce82324c1d005c812bf66fe40413f3765b6f796fa7b16425f.png)
+
+Flagi możemy uruchamiać pojedynczo, albo wszystkie na raz używająć `--strict`
+
+#### noImplicitAny
+
+```ts
+function add(arg1, arg2) {
+  // nie podaliśmy any explicite = 🚨 błąd
+}
+```
+
+#### noImplicitReturn
+
+Jeżeli funkcja ma różne ścieżki zwracania kodu (np. ma if'a, albo try-catch) to każda ścieżka musi zwrócić wartość
+
+```ts
+function something(): object {
+  try {
+    doDangerousStuff();
+  } catch (e) {
+    console.error("oh no! ...anyway"); // 🚨 nic nie zwróciliśmy = błąd
+  }
+}
+```
+
+#### strictPropertyInitialization
+
+Jeżeli tworzymy pole na klasie, to pole musi zostać w jakiś sposób zainicjalizowane
+
+```ts
+class DataController {
+  private data: number; // 🚨 pole nie zainicjalizowane z wartością, ani w constructor
+
+  constructor() {}
+
+  async initialize() {
+    this.data = await getData();
+  }
+}
+```
+
+Jak to naprawić?
+
+1. Jak nie ma, to dajemy `?:` - wtedy to przechodzi
+
+```ts
+class DataController {
+  private data?: number;
+  // ...
+}
+```
+
+uperdliwe bo musimy za każdym razem sprawdzać czy jest undefined
+
+2. `!` - wyłączamy sprawdzanie TypeScripta, niebezpieczne może się wywalić w runtimie
+
+> "Panie kompilatorze, ja wiem lepiej"
+
+#### strictNullChecks
+
+Po włączeniu tej flagi musimy pisać explicite, że coś może zawierać nulla albo undefined.
+Jeżeli coś może zwrócić unfefined. np. `array.find()` to musimy to uwzględnić w typie zmiennej do której do przypisujemy.
+
+```ts
+const john: Employee | undefined = employeees.find(e => e.firstName === 'John')
+```
+
+Możemy też użyć `!` jeżeli jesteśmy pewni swego, że takie coś musi istnieć
+
+```ts
+// ! tutaj piszemy dlaczego jest wykrzyknik
+const john: Employee = employeees.find(e => e.firstName === 'John')!
+```
+
+W przypadku obiektów możemy ponownie użyć `!` albo optional chaining `?` wtedy undefined zostanie "zpropagowany".
+Inną możliwością jest type guard.
+
+#### noUncheckedIndexedAccess
+
+> ⚠️ Ta flaga nie zawiera się w `--strict` musimy ją włączyć osobno
+
+To rozwiązuje wzceśniejszą "dziurę" w TypeScriptcie przy dostępie do `Record` lub `mapped type`.
+Od teraz każde odwołanie się z kluczem będzie zawsze zwracało unię podanego typu + undefined.
+
+Ta flaga jest bardzo inwazyjna - wszędzie będziemy musieli sprawdzać tego undefined.
+Z drugiej strony bez tej flagi musimy sprawdzać każde miejsce, w którym używamy indexów czy mamy pewność że dany element się tam znajduje.
+
+### Variance
+
+Reguły kompatybilności typów
+
+![picture 2](../../images/46ff280df3fc8147fb8d4e6648ddc703fd4c71b538f0c42d87024ae387f1cb85.png)
+
+Jakie możemy podstawić wartości przy podanym typie? type / supertype / subtype - na to pytanie odpowiada variance
+
+- **In**variance - nie może być ani `subtype` ani `supertype`
+- **Bi**variance - możemy przekazać wszystko: `subtype` oraz `supertype`
+  - najmniej bezpieczne rozwiązanie, przepuszcza wszystko
+- **Co**variance - przepuszzca typ, oraz jego podtyp
+  - każdy developer jest człowiekiem, nie każdy człowiek jest developerem
+  - występuje najcześciej, najbardziej intuicyjne
+- **Contra**variance - idziemy na wspak, przepuszcza typ oraz jego nadtyp
+  - ma to sens w przypadku funkcji
+
+Flaga `strictFunctionTypes`:
+  - `false` - parametry funkcji są sprawdzane przez **bivariance**, można przekazać typ, nadtyp, podtyp
+  - `true` - parametry funkcji są sprawdzane przez **contravariance**
+
+Pozycja kontrawariancyjna (`contravariant position`) - inaczej zachowuje się przekazywanie parametrów funkcji, a inaczej obiektób w
+
+```ts
+function appEngine(
+  processFn: (d: Developer) => void,
+  dev: Developer
+) {
+  processFn(dev);
+}
+```
+
+Obiekt możemy doprecyzować, funkcję możemy tylko uogólnić
+
+Dlaczego to ma sens?
+- funkcja, które przyjmuje dane ogólne, nie będziem miała z przetwarzaniem danych bardziej precyzyjnych
+- funkcja, która przyjmuje dane precyzyjne, prawdopodobnie nie zadziała z danymi bardziej ogólnymi bo będzie jej brakować pól albo metod
+
+> PROTIP: Jeśli w swoich komunikatach błędów widzisz odwrócenie kolejności typów - to właśnie przeszłaś/edłeś przez pozycję kontrawariancyjną. To powinno dużo podpowiedzieć przy debugowaniu.
+
+W interfejsach jeśli chcemy żeby funkcja korzystała z:
+- *bi*wariancji - piszemy ją jako metodę
+```ts
+interface Test<T> {
+  push(value: T): number;
+}
+```
+- *kontra*wariancji - piszemy ją jako arrow function
+```ts
+interface Test<T> {
+  push: (value: T) => number
+}
+```
+
+Wniosek? Kontrawariancja chroni przed błędami runtime, więc interfejsy na arrowach są bezpieczniejsze, ale mogą rzucać false postivives.
+
+### False positive vs False negative
+
+![picture 3](../../images/abf669d6ae748b20cb64dd3f46b1595b892f6b369c1938f3d832dc3593f7f03f.png)
+
+**False positive** - alam zadziałał, mimo że nie było złodzieja
+**False negative** - alarm nie zadziałał, a wpadł złodziej
+
+Musimy odpowiedzieć sobie na pytaniae co jest dla nas lepsze/gorsze? W praktyce TypeScript musi wybrać albo jedno albo drugie - nie zawsze będzie działał idealnie.
+
+#### Soundness
+
+System jest *sound* jeśli wykluczamy `false negative`. To jest upierdliwe, ponieważ system może się czepiać sytuacji poprawnych.
+
+Jeśli kompilator przepuścił to znaczy że system *na pewno* jest poprawny. Bo to udowodnił.
+
+#### Completeness
+
+System jest *complete* jeśli wykluczymy `false positive`. To jest raczej większa "lipa" niż nadwrażliwy alarm. Ponieważ może nie zadziałać kiedy trafi się złodziej.
+
+Kompilator poprawnie działającego kodu nigdy nie odrzuci.
+
+#### Rozstrzygalność
+
+Soundness i completeness nie są przeciwieństwami - to dwie osobne cechy.
+
+Rozstrzygalnośćć - kompilator w skończonym czasie odpowie czy program się wywali czy nie.
+Z czegoś trzeba zrezygnować - rozstrzygalność nie podlega dyskusji w TypeScriptcie, ponieważ kompilacja musi się udać. Dlatego możemy wybrać albo sound albo complete.
+
+Jeżeli zrezygnujemy z rozstrzygalności to mamy JavaScript - wszystko musimy sprawdzać sobie sami.
+
+#### Dowodzenie poprawności vs wygoda programistyn
+
+TypeScript robi wyłom od pewnych regół i czasami jest sound a czasami unsound (przepyszcza rzeczy które mogłby być niebezpieczne).
+Podważa status quo - ponieważ zakłada, ze kompilator nie ma udowadniać kodu. TS robi wyjątki żeby nie robić problemów tam, gdzie kod i tak jest prawdopodobnie poprawny, ale nie potrafi tego udowodnić.
+
+#### Unsound TypeScript
+
+Bycie unsound to jest główny zarzut stawiany TypeScriptowi - że pozwala na rzeczy, które są potencjalnie niebezpieczne. Na dodatek można to kontrolować flagami.
+
+![picture 4](../../images/fc220db059f7c69a3f56d9855e7066416dcc8f4fe4213f4ec4516865644d96f6.png)
+![picture 5](../../images/3aae13fa03b4ddfb236ece547c3f8642f8e8e8fae4ff67611c262fb575ebbab7.png)
