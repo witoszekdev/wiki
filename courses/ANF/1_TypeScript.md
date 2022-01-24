@@ -1281,3 +1281,191 @@ Bycie unsound to jest główny zarzut stawiany TypeScriptowi - że pozwala na rz
 
 ![picture 4](../../images/fc220db059f7c69a3f56d9855e7066416dcc8f4fe4213f4ec4516865644d96f6.png)
 ![picture 5](../../images/3aae13fa03b4ddfb236ece547c3f8642f8e8e8fae4ff67611c262fb575ebbab7.png)
+
+## Wzorce i antywzorce
+
+### Zmiana deklaracji typu
+
+![picture 1](../../images/aa21ba20d81fc862668ce309d85d1cb0d5556349ad81869648228a39439b5c81.png)
+
+Kluczowy element systemu nie ma swojej reprezentacji, tylko bazuje na primitiv'ie `number` + jest zainline'owany w setkach miejsc.
+
+Single Source of Truth spowoduje propagację zmian. Różnica w kodzie jest minimalna
+
+Oprócz centralnych deklaracji będziemy też potrzebować typów wtórnych - jeśli zmienimy pierwotny typ, to wtórny również się zmieni.
+
+#### Declarative types
+
+- `keyof`
+- lookup types
+
+```ts
+const tuple = ["PLN", 125, true] as const;
+// readonly
+```
+
+Tworzy krotkę read-only z typem na każdym indeksie, sprawdza również czy nie wyjdziemy poza zakres array'a. Przydatne jeśli znamy długość
+
+- `typeof`
+- `ReturnType`
+
+Single source of truth dla danych zwracanych z funkcji - zamist pisać typ jaki funkcja zwraca używamy `ReturnType`. Po zmianie implementacji wszystkie inne typy będą się aktualizowały
+
+- typy mapowane
+
+### Primitive Obsession
+
+![picture 1](../../images/d8210aa6f1250dfa761fda8d41cba2904a280d0746f230c82d285387fd11dc98.png)
+
+Laczenie danych które nie mają sensu - np. oprocentowania, z czasem trwania. Jeśli się pomylimy to kompilator tego nie wychwyci.
+
+Primitive Obsession jest wtedy, kiedy w systemie mamy konkretny byt (np. osobę, szkodę ubezpieczeniową, itp) - i zamiast stworzyć dla nich osobny typ używamy prymitywów.
+
+![picture 2](../../images/caec70280ebb8e936295d94ec86c7603c53ec360792948e80e1143e2f59b5918.png)
+
+#### Fix
+
+**Opaque / Brand types**
+
+Rozszerzamy interfejs / typ - bez wpływu na wartości w runtime. Cel: blokada kompatybilności.
+
+![picture 3](../../images/66f42177e9657ff1dd4abc518bd0f115a3f7e1603a4df999a91216d74d310028.png)
+
+Chroni tylko przed **przypisaniem** niewłaściwego typu
+
+```ts
+type Money = number & { readonly type: unique symbol }
+declare let m: Money
+declare let n: number
+
+m = n //❌ Error: nie można przypisać number do Money
+n = m // ✅ W drugą stronę się da
+```
+
+**Value Objects (DDD)**
+
+![picture 4](../../images/c7e49674ca5ab92b55238d14c33193891fdabb69af24b4611fb11abd822c5199.png)
+
+Wpływa na runtime. Dane przestają być prymitivem, a staje się klasą. Specjalne obiekty, które nie mają swojej tożsamości, reprezentują jedynie wartośc.
+
+Sprawdzenie czy dwa takie same value objects nie różnią się odsiebie **nie** odbywa się na podstawie referencji (reference) - bo zawsze byłaby inna. Używamy do tego specjalnej metody, która porównuje wewnętrzny stan dwód Value Object - na tej podstawie określa równość albo różność.
+
+Wszelkie operacje jakie mają być dozwolone są zaimplementowane wprost jako metody klasy.
+
+```ts
+class Money {
+  private constructor(
+    private value: number,
+    private currency: Currency,
+  ){}
+
+  // prywatny konstruktor & statyczna metoda fabrykująca
+  static from(value: number, currency: Currency){
+    return new Money(value, currency)
+  }
+
+  // możemy mnożyć tylko przez współczynnik (liczbę)
+  multiply(factor: number){
+    return new Money(this.value * factor, this.currency)
+  }
+
+  // chronimy reguł biznesowych:
+  // można dodawać tylko pieniądze w tej samej walucie
+  add(another: Money){
+    if (this.currency != another.currency){
+      throw new Error('Cannot add different currencies')
+    }
+    return new Money(this.value + another.value, this.currency)
+  }
+
+  nominalValue(){
+    return this.value
+  }
+}
+```
+
+**"Boolean Obsession"**
+
+![picture 5](../../images/c1b5aec5f4a96ca80b55815ac634f142ad334ff072c6efd4d6b4615934132f70.png)
+
+Nadużywanie zmiennych boolowskich + opcjonalne pola (które nie powinny istnieć).
+Tworzymy wiele permutacji, które dla TSa są poprawne ale logicznie nie są.
+
+```ts
+type State = {
+  loading: boolean;
+  error?: Error;
+  data?: Data;
+}
+
+let state: State
+state = {loading: true} // ✅
+state = {loading: false} // bez sensu - nie ma ani danych, ani errora
+state = {loading: true, error: new Error(), data: 123} // wtf?
+```
+
+Chcemy uniemożliwić wejścia w niepoprawne stany.
+
+```ts
+type StateFixed =
+  | {type: "LOADING"}
+  | {type: "ERROR", error: Error}
+  | {type: "LOADED", data: Data}
+```
+
+Umożliwiamy tylko wybrane stany i dane. Nie możemy np. być w loaded i mieć error.
+Jeśli podamy za dużo danych dostaniemy `Excessive attribute check error`.
+
+```ts
+let n: StateFixed;
+n = {type: "LOADED", error: new Error(), data: 123} // error - pole error jest niepotrzebne
+```
+
+Inne rozwiązanie: maszyny stanowe (Redux, Context, XState)
+
+### Typowanie żądań HTTP
+
+![picture 6](../../images/b516e7f4f845965f102152a263322f00edcbe2c7eb39e3b9be9116c03fcc2492.png)
+
+- return type: implicit / explicit
+- type safety: fetch vs axios
+
+fetch - używa `Promise<any>`, ma słabe definicje typów
+
+```ts
+export const __getTransfers = () => {
+  return fetch('/account/transfers')
+  .then(res => res.json())
+  .then(collection => collection.toNieIstnieje) // ⚠️ powinien być error ale przechodzi bo `any`
+}
+```
+
+axios - pozwala sparametryzować wywołania get'a
+
+```ts
+export const _getTransfers = () => {
+  return axios.get<Transfer[]>('/account/transfers')
+    .then(res => res.data)
+    .then(collection => collection.toNieIstnieje) // 🚨 error
+}
+```
+
+#### DTO - Data Transfer Objects
+
+DTO'sy są do przekazywania danych między systemami danych
+
+![picture 7](../../images/87de64ee722a3574bb8ea20876dc162434b3f2a21eabf5dfc31b600a28f68d64.png)
+
+Stan obsługiwany w aplikacji i DTO - to dwa osobne byty
+
+Czy aplikacja powinna być podatna na zmiany kontraktu (DTO)?
+- zmiana jednego typu w wielu kopiach 👎
+- zmiana jednego DTO - propagacja w projekcie = błędy po każdej zmianie 😬
+
+Jeśi zapożyczymy całe DTO to pójdzie fala zmian po całych użyciach w aplikacji. Aplikacja się nie zmieniła, a kod i tak trzeba zmieniać bo mamy błędy w TSie. Używamy typu który do nas nie należy, a traktujemy jak swój własny.
+
+DTO - traktujemy jako zewnętrzną zależność (mimo że siedzi w repo). Tworzymy osobne modele, które będą wykorzystywane w aplikacji - mapujemy w funkcji HTTP na naszą lokalną strukturę. Zmiany DTO można zaeknapsulować, tak żeby aplikacja tych zmian nawet nie zauważyła.
+
+## Podsumowanie
+
+![picture 8](../../images/97d2ada0bb157b0bb6ef0bf7a959c34b321ef818c2baba8a6341a1f93e623900.png)
