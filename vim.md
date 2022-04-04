@@ -70,6 +70,14 @@ When in visual selection press `:` to search in that selection
 - `:copen` - opens quickfix list
 - `:cdo` - apply commands on all files in quickfix list
 
+### Cookbook
+
+Open qfl from buffer contents
+
+```vim
+:cexpr join(getline(1,'$'), "\n")
+```
+
 ## Macros
 
 Macros record every key stroke, and replay them
@@ -82,7 +90,7 @@ Macros record every key stroke, and replay them
 ## Window mode
 
 - `CTRL+W` (reffered as `<W>`)  - enter window mode
-- `<W> + CTRL+O` - close all other windows except the focused one 
+- `<W> + CTRL+O` - close all other windows except the focused one
 - `<W> + CTRL+V` - open new window in horizontal mode
 
 ## Registers
