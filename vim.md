@@ -67,8 +67,20 @@ When in visual selection press `:` to search in that selection
 
 ## Quickfix list
 
+Quickfix list has two types of results:
+- entries - actual line that matched the search
+- file - file that contained the result
+
 - `:copen` - opens quickfix list
-- `:cdo` - apply commands on all files in quickfix list
+- `:cdo` - apply commands on all *entries* in quickfix list
+  - Run macro on all results and update file:
+    ``:cdo execute "norm @q" | update``
+- ``:cfdo`` - apply commands on all files in quickfix list
+  - Run search and replace on every file and update:
+    `:cfdo s/v2/v3/ | update`
+
+**Reference**
+- https://gist.github.com/Integralist/8d01300efcd2006c69e8b9492c0eada8
 
 ### Cookbook
 
