@@ -2,6 +2,8 @@
 
 ## In React
 
+### Polymorphic components
+
 render as prop - use `React.ElementType`
 
 ```tsx
@@ -63,6 +65,8 @@ export type UIComponentInjectable<Props, Tag extends AnyTag> = React.FC<
   UIComponentInjectableProps<Props, Tag>
 >;
 ```
+
+- [In material-ui](https://mui.com/material-ui/guides/composition/#with-typescript)
 
 ### Private children
 
@@ -164,7 +168,9 @@ const foo = <T extends unknown>(x: T) => x;
 const foo = <T>(x: T) => x;
 ```
 
-### Preserve generic types in higher order functions
+### Preserve generic types in higher order functions (ex. forwardRef)
+
+aka. forwardRef with generics
 
 [Source](https://stackoverflow.com/questions/51884498/using-react-forwardref-with-typescript-generic-jsx-arguments)
 
@@ -176,6 +182,8 @@ const SelectWithRef = forwardRef(
   ) => <Select<Option> {...props} forwardedRef={ref} />
 );
 ```
+
+[More examples](https://fettblog.eu/typescript-react-generic-forward-refs/)
 
 ## Conditional types
 
